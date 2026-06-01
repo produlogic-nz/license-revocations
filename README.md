@@ -38,10 +38,15 @@ in that GUI commits an append to this file and pushes to main.
 On startup, the receiver:
 
 1. HTTP-GETs the URL above.
-2. If it succeeds: caches the parsed JSON locally with a timestamp.
-3. If it fails AND a cached copy < 7 days old exists: uses the cache.
-4. If it fails AND no usable cache: receiver still starts but shows
-   a "couldn't check revocations" banner (fail-open chosen 2026-06-02).
+2. If it succeeds: caches the parsed JSON locally with a timestamp,
+   then enforces against the live list.
+3. If it fails AND a cached copy exists: uses the cache, regardless
+   of age. An offline customer can run indefinitely on cached state;
+   the moment they reconnect, the live fetch refreshes and enforces
+   any newer cancellations.
+4. If it fails AND no usable cache exists (truly cold first launch on
+   this PC): receiver starts with a fail-open warning logged to the
+   issues panel (Rowan's 2026-06-02 choice).
 5. Compares the receiver's own `license_id` against the `revoked` list.
    If listed → refuses to start with a plain-English error pointing at
    ProduLogic for renewal.
